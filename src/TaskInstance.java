@@ -4,6 +4,8 @@ public class TaskInstance {
     private int processNumber;
     private int taskNumber;
 
+    private String instanceName;
+
     private List<Integer> tasks;
 
     public int getProcessNumber() {
@@ -28,5 +30,13 @@ public class TaskInstance {
 
     public void setTasks(List<Integer> tasks) {
         this.tasks = tasks;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 }
