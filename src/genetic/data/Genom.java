@@ -1,4 +1,4 @@
-package genetic;
+package genetic.data;
 
 public class Genom {
     private int executionTime;

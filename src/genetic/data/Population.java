@@ -1,4 +1,4 @@
-package genetic;
+package genetic.data;
 
 import java.util.ArrayList;
 import java.util.List;

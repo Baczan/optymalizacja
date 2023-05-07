@@ -1,5 +1,7 @@
-package genetic;
+package genetic.results;
 
+import genetic.data.Chromosome;
+import genetic.data.Genom;
 import taskInstance.TaskInstance;
 
 import java.util.List;
@@ -41,7 +43,7 @@ public class GeneticResultsPrinter {
             List<Integer> keys = processes.keySet().stream().sorted().toList();
 
             for (Integer key : keys) {
-                List<genetic.Genom> genoms = processes.get(key);
+                List<Genom> genoms = processes.get(key);
                 String tasks = genoms.stream()
                         .map(genom -> String.valueOf(genom.getExecutionTime()))
                         .collect(Collectors.joining("|"));

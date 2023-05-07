@@ -1,5 +1,6 @@
-package genetic;
+package genetic.results;
 
+import genetic.data.Chromosome;
 import taskInstance.TaskInstance;
 
 public class TaskInstanceWithSolution {

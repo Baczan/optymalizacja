@@ -1,5 +1,9 @@
 package genetic;
 
+import genetic.alg.Genetic;
+import genetic.data.Chromosome;
+import genetic.results.GeneticResultsPrinter;
+import genetic.results.TaskInstanceWithSolution;
 import taskInstance.TaskInstance;
 import taskInstance.TaskInstanceReader;
 
@@ -10,8 +14,8 @@ public class GeneticMain {
         List<TaskInstance> taskInstances = TaskInstanceReader.getTaskInstanceFromDirectory("C:\\a");
 
         List<TaskInstanceWithSolution> taskInstanceWithSolutions = taskInstances.stream().map(taskInstance -> {
-            Genetic genetic = new Genetic();
-            Chromosome chromosome = genetic.solve(taskInstance);
+            Genetic genetic = new Genetic(taskInstance);
+            Chromosome chromosome = genetic.solve();
 
             return new TaskInstanceWithSolution(taskInstance, chromosome);
         }).toList();

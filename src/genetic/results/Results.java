@@ -1,6 +1,6 @@
-package genetic;
+package genetic.results;
 
-import genetic.Chromosome;
+import genetic.data.Chromosome;
 
 public class Results {
     private String instanceName;
