@@ -10,13 +10,13 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Genetic {
+    //Services
+    private final GeneticInitialPopulationGenerator generateInitialPopulation = new GeneticInitialPopulationGenerator();
+    private final GeneticSelection geneticSelection = new GeneticSelection();
 
-    GeneticInitialPopulationGenerator generateInitialPopulation = new GeneticInitialPopulationGenerator();
-    GeneticSelection geneticSelection = new GeneticSelection();
+    //Fields
+    private final TaskInstance taskInstance;
 
-    TaskInstance taskInstance;
-
-    //For random selection
     private final Random random = new Random();
 
 
@@ -25,11 +25,15 @@ public class Genetic {
 
     private int mutationRate = 0;
 
+    private float elitePercentage = 0.05f;
+
     //Simulation duration
     private final int duration = 30;
     private final ChronoUnit unit = ChronoUnit.SECONDS;
 
+    //Loging
     private Chromosome bestResult;
+
 
     public Genetic(TaskInstance taskInstance) {
         this.taskInstance = taskInstance;
@@ -86,8 +90,10 @@ public class Genetic {
     private Population selection(Population population) {
         geneticSelection.prepareForRandomSelection(population);
 
-        int eliteNumber = Math.round(populationSize * 0.1f);
+        int eliteNumber = Math.round(populationSize * elitePercentage);
 
+
+        //Copy elite chromosomes
         Population newPopulation = new Population();
         for (int i = 0; i < eliteNumber; i++) {
             Chromosome newChromosome = new Chromosome();
@@ -99,11 +105,10 @@ public class Genetic {
             }
 
             newChromosome.setGenoms(newGenoms);
-
             newPopulation.getChromosomes().add(newChromosome);
         }
 
-
+        //Create new chromosomes from parents
         for (int i = eliteNumber; i < populationSize; i++) {
             Chromosome parent1 = geneticSelection.selectRandom(population);
             Chromosome parent2 = geneticSelection.selectRandom(population);
@@ -116,8 +121,7 @@ public class Genetic {
 
     private Chromosome cross(Chromosome parent1, Chromosome parent2) {
 
-        List<Genom> genoms = new ArrayList<>();
-
+        List<Genom> genomes = new ArrayList<>();
         for (int i = 0; i < parent1.getGenoms().size(); i++) {
             int randomNumber = random.nextInt(0, 2);
 
@@ -130,14 +134,17 @@ public class Genetic {
                 throw new RuntimeException("sad");
             }
 
-            genoms.add(new Genom(baseGenom.getExecutionTime(), baseGenom.getProcess()));
+            genomes.add(new Genom(baseGenom.getExecutionTime(), baseGenom.getProcess()));
         }
 
-        return new Chromosome(genoms);
+        return new Chromosome(genomes);
     }
 
     private void mutate(Population population) {
-        for (Chromosome chromosome : population.getChromosomes()) {
+        int eliteNumber = Math.round(populationSize * elitePercentage);
+
+        for (int i = eliteNumber; i < population.getChromosomes().size(); i++) {
+            Chromosome chromosome = population.getChromosomes().get(i);
             for (Genom genom : chromosome.getGenoms()) {
                 if (random.nextInt(0, mutationRate) == 0) {
                     genom.setProcess(random.nextInt(0, taskInstance.getProcessNumber()));
