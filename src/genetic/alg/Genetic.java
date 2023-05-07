@@ -83,7 +83,7 @@ public class Genetic {
     }
 
     private void calculateFitness(Population population) {
-        population.getChromosomes().forEach(Chromosome::updateFitness);
+        population.getChromosomes().stream().parallel().forEach(Chromosome::updateFitness);
         population.getChromosomes().sort(Comparator.comparingInt(Chromosome::getFitness));
     }
 
