@@ -1,8 +1,12 @@
+package greedy;
+
+import taskInstance.TaskInstance;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class TaskInstanceSolver {
+public class GreedySolver {
 
     //https://en.wikipedia.org/wiki/Longest-processing-time-first_scheduling
     public static List<Process> solveTaskInstance(TaskInstance taskInstance) {

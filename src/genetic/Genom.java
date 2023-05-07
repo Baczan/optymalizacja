@@ -1,3 +1,5 @@
+package genetic;
+
 public class Genom {
     private int executionTime;
 

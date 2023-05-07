@@ -1,13 +1,25 @@
+package taskInstance;
+
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TaskInstanceReader {
+
+    public static List<TaskInstance> getTaskInstanceFromDirectory(String path){
+        File directory = new File(path);
+        List<File> files = Arrays.asList(directory.listFiles());
+
+        List<TaskInstance> taskInstances = files.stream()
+                .filter(file -> !file.isDirectory())
+                .map(file -> TaskInstanceReader.readTaskInstance(file.getAbsolutePath()))
+                .toList();
+
+        return taskInstances;
+    }
 
     public static TaskInstance readTaskInstance(String filePath) {
 

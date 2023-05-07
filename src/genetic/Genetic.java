@@ -1,3 +1,7 @@
+package genetic;
+
+import taskInstance.TaskInstance;
+
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -16,13 +20,13 @@ public class Genetic {
 
 
     //Simulation duration
-    private final int duration = 3;
-    private final ChronoUnit unit = ChronoUnit.MINUTES;
+    private final int duration = 30;
+    private final ChronoUnit unit = ChronoUnit.SECONDS;
 
 
     public Chromosome solve(TaskInstance taskInstance) {
         int bestResult = 100000;
-        List<Chromosome> population = generateInitialPopulation(taskInstance, populationSize);
+        Population population = generateInitialPopulation(taskInstance, populationSize);
         calculateFitness(population);
 
         System.out.println("Start time: " + new Date() + "\n");
@@ -36,11 +40,11 @@ public class Genetic {
             mutate(population, taskInstance);
 
             if (populationNumber % 1000 == 0) {
-                System.out.println("TaskInstance: " + taskInstance.getInstanceName() + " Population " + (populationNumber) + " best result: " + population.get(0).getFitness());
+                System.out.println("taskInstance.TaskInstance: " + taskInstance.getInstanceName() + " Population " + (populationNumber) + " best result: " + population.getChromosomes().get(0).getFitness());
             }
 
-            if (population.get(0).getFitness() < bestResult) {
-                bestResult = population.get(0).getFitness();
+            if (population.getChromosomes().get(0).getFitness() < bestResult) {
+                bestResult = population.getChromosomes().get(0).getFitness();
             }
         }
 
@@ -48,11 +52,11 @@ public class Genetic {
         System.out.println("\nEnd time: " + new Date());
         System.out.println("Best result: " + bestResult);
 
-        return population.get(0);
+        return population.getChromosomes().get(0);
     }
 
-    private void mutate(List<Chromosome> population, TaskInstance taskInstance) {
-        for (Chromosome chromosome : population) {
+    private void mutate(Population population, TaskInstance taskInstance) {
+        for (Chromosome chromosome : population.getChromosomes()) {
             for (Genom genom : chromosome.getGenoms()) {
                 if (random.nextInt(0, taskInstance.getTaskNumber() * 10) == 0) {
                     genom.setProcess(random.nextInt(0, taskInstance.getProcessNumber()));
@@ -61,10 +65,12 @@ public class Genetic {
         }
     }
 
-    private List<Chromosome> generateInitialPopulation(TaskInstance taskInstance, int size) {
-        return IntStream.range(0, size)
+    private Population generateInitialPopulation(TaskInstance taskInstance, int size) {
+        List<Chromosome> chromosomes = IntStream.range(0, size)
                 .mapToObj(v -> generateChromosome(taskInstance))
                 .collect(Collectors.toList());
+
+        return new Population(chromosomes);
     }
 
     private Chromosome generateChromosome(TaskInstance taskInstance) {
@@ -78,24 +84,24 @@ public class Genetic {
         return new Chromosome(genoms);
     }
 
-    private List<Chromosome> generateNewPopulation(List<Chromosome> population) {
+    private Population generateNewPopulation(Population population) {
         prepareForRandomSelection(population);
 
         int eliteNumber = Math.round(populationSize * 0.1f);
 
-        List<Chromosome> newPopulation = new ArrayList<>();
+        Population newPopulation = new Population();
         for (int i = 0; i < eliteNumber; i++) {
             Chromosome newChromosome = new Chromosome();
             List<Genom> newGenoms = new ArrayList<>();
 
-            Chromosome chromosome = population.get(i);
+            Chromosome chromosome = population.getChromosomes().get(i);
             for (Genom genome : chromosome.getGenoms()) {
                 newGenoms.add(new Genom(genome.getExecutionTime(), genome.getProcess()));
             }
 
             newChromosome.setGenoms(newGenoms);
 
-            newPopulation.add(newChromosome);
+            newPopulation.getChromosomes().add(newChromosome);
         }
 
 
@@ -103,7 +109,7 @@ public class Genetic {
             Chromosome parent1 = selectRandom(population);
             Chromosome parent2 = selectRandom(population);
             Chromosome newChromosome = cross(parent1, parent2);
-            newPopulation.add(newChromosome);
+            newPopulation.getChromosomes().add(newChromosome);
         }
 
         return newPopulation;
@@ -131,9 +137,9 @@ public class Genetic {
         return new Chromosome(genoms);
     }
 
-    private void calculateFitness(List<Chromosome> population) {
-        population.forEach(this::fitness);
-        population.sort(Comparator.comparingInt(Chromosome::getFitness));
+    private void calculateFitness(Population population) {
+        population.getChromosomes().forEach(this::fitness);
+        population.getChromosomes().sort(Comparator.comparingInt(Chromosome::getFitness));
 
         calculateScore(population);
     }
@@ -149,37 +155,37 @@ public class Genetic {
         chromosome.setFitness(fitness);
     }
 
-    private void calculateScore(List<Chromosome> population) {
-        Chromosome lastChromosome = population.get(population.size() - 1);
+    private void calculateScore(Population population) {
+        Chromosome lastChromosome = population.getChromosomes().get(population.getChromosomes().size() - 1);
 
-        for (Chromosome chromosome : population) {
+        for (Chromosome chromosome : population.getChromosomes()) {
             chromosome.setScore(lastChromosome.getFitness() - chromosome.getFitness());
         }
     }
 
-    private void prepareForRandomSelection(List<Chromosome> population) {
+    private void prepareForRandomSelection(Population population) {
         cumulativeScore = new ArrayList<>();
         score = 0;
 
-        for (Chromosome chromosome : population) {
+        for (Chromosome chromosome : population.getChromosomes()) {
             score += chromosome.getScore();
             cumulativeScore.add(score);
         }
     }
 
-    private Chromosome selectRandom(List<Chromosome> population) {
+    private Chromosome selectRandom(Population population) {
         int randomNumber = random.nextInt(0, score + 1);
 
         for (int i = 0; i < cumulativeScore.size(); i++) {
             Integer chromosomeCumulativeScore = cumulativeScore.get(i);
             if (chromosomeCumulativeScore > randomNumber) {
-                Chromosome chromosome = population.get(i);
+                Chromosome chromosome = population.getChromosomes().get(i);
                 chromosome.setSelectionCount(chromosome.getSelectionCount() + 1);
                 return chromosome;
             }
         }
 
-        return population.get(population.size() - 1);
+        return population.getChromosomes().get(population.getChromosomes().size() - 1);
     }
 
 }

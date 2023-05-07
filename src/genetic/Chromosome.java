@@ -1,3 +1,5 @@
+package genetic;
+
 import java.util.List;
 
 public class Chromosome {

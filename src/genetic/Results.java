@@ -1,3 +1,7 @@
+package genetic;
+
+import genetic.Chromosome;
+
 public class Results {
     private String instanceName;
 
