@@ -9,9 +9,12 @@ import java.util.List;
 public class GreedySolver {
 
     //https://en.wikipedia.org/wiki/Longest-processing-time-first_scheduling
-    public static List<Process> solveTaskInstance(TaskInstance taskInstance) {
+    public static List<Process> solveTaskInstance(TaskInstance taskInstance, boolean lpt) {
         List<Integer> tasks = taskInstance.getTasks();
-        tasks.sort(Comparator.reverseOrder());
+
+        if(lpt){
+            tasks.sort(Comparator.reverseOrder());
+        }
 
         List<Process> processes = new ArrayList<>();
         for (int i = 0; i < taskInstance.getProcessNumber(); i++) {
