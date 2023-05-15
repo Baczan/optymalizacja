@@ -38,7 +38,7 @@ public class GeneticInitialPopulationGenerator {
     }
 
     public Population generateFromLpt(TaskInstance taskInstance, int size) {
-        List<Process> processes = GreedySolver.solveTaskInstance(taskInstance);
+        List<Process> processes = GreedySolver.solveTaskInstance(taskInstance, true);
 
         List<Chromosome> chromosomes = IntStream.range(0, size)
                 .mapToObj(v -> {
@@ -59,9 +59,9 @@ public class GeneticInitialPopulationGenerator {
         return new Population(chromosomes);
     }
 
-    public Population half(TaskInstance taskInstance, int size){
-        Population population1 = generateInitialPopulationRandom(taskInstance, size/2);
-        Population population2 = generateFromLpt(taskInstance, size/2);
+    public Population half(TaskInstance taskInstance, int size) {
+        Population population1 = generateInitialPopulationRandom(taskInstance, size / 2);
+        Population population2 = generateFromLpt(taskInstance, size / 2);
 
         List<Chromosome> a = new ArrayList<>();
         a.addAll(population1.getChromosomes());

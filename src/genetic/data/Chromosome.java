@@ -6,10 +6,7 @@ import java.util.stream.Collectors;
 
 public class Chromosome {
     private List<Genom> genoms;
-
     private int fitness = 0;
-
-    private int selectionCount = 0;
 
     public Chromosome() {
     }
@@ -41,13 +38,5 @@ public class Chromosome {
 
     public void setFitness(int fitness) {
         this.fitness = fitness;
-    }
-
-    public int getSelectionCount() {
-        return selectionCount;
-    }
-
-    public void setSelectionCount(int selectionCount) {
-        this.selectionCount = selectionCount;
     }
 }

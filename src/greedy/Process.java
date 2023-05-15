@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Process {
-    private String processName;
+    private int processNumber;
     private Integer currentExecutionTime = 0;
 
     private List<Integer> assignedTasks = new ArrayList<>();
 
-    public Process(String processName) {
-        this.processName = processName;
+    public Process(int processNumber) {
+        this.processNumber = processNumber;
     }
 
     public void assignTask(Integer task) {
@@ -34,11 +34,11 @@ public class Process {
         this.assignedTasks = assignedTasks;
     }
 
-    public String getProcessName() {
-        return processName;
+    public int getProcessNumber() {
+        return processNumber;
     }
 
-    public void setProcessName(String processName) {
-        this.processName = processName;
+    public void setProcessNumber(int processNumber) {
+        this.processNumber = processNumber;
     }
 }

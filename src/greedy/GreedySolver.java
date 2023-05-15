@@ -12,13 +12,13 @@ public class GreedySolver {
     public static List<Process> solveTaskInstance(TaskInstance taskInstance, boolean lpt) {
         List<Integer> tasks = taskInstance.getTasks();
 
-        if(lpt){
+        if (lpt) {
             tasks.sort(Comparator.reverseOrder());
         }
 
         List<Process> processes = new ArrayList<>();
         for (int i = 0; i < taskInstance.getProcessNumber(); i++) {
-            processes.add(new Process("process " + (i + 1)));
+            processes.add(new Process(i));
         }
 
         for (Integer task : tasks) {

@@ -10,21 +10,13 @@ public class GeneticSelection {
     private int score = 0;
 
 
-    public void prepareForRandomSelection(Population population, float progress) {
+    public void prepareForRandomSelection(Population population) {
         cumulativeScore = new ArrayList<>();
         score = 0;
 
-        float progressScaler = 1 - (progress * 2);
-        if(progressScaler < 0){
-            progressScaler = 0;
-        }
-
-/*        float progressScaler = 1;*/
-
         Chromosome lastChromosome = population.getChromosomes().get(population.getChromosomes().size() - 1);
         for (Chromosome chromosome : population.getChromosomes()) {
-            int chromosomeScore = Math.round((lastChromosome.getFitness() - chromosome.getFitness()) * progressScaler) + 1;
-            //int chromosomeScore = chromosome.getFitness();
+            int chromosomeScore = Math.round((lastChromosome.getFitness() - chromosome.getFitness())) + 1;
             score += chromosomeScore;
             cumulativeScore.add(score);
         }
@@ -37,7 +29,6 @@ public class GeneticSelection {
             Integer chromosomeCumulativeScore = cumulativeScore.get(i);
             if (chromosomeCumulativeScore > randomNumber) {
                 Chromosome chromosome = population.getChromosomes().get(i);
-                chromosome.setSelectionCount(chromosome.getSelectionCount() + 1);
                 return chromosome;
             }
         }

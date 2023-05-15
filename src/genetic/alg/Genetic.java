@@ -3,6 +3,7 @@ package genetic.alg;
 import genetic.data.Chromosome;
 import genetic.data.Genom;
 import genetic.data.Population;
+import greedy.Process;
 import taskInstance.TaskInstance;
 
 import java.time.temporal.ChronoUnit;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Genetic {
+
     //Services
     private final GeneticInitialPopulationGenerator generateInitialPopulation = new GeneticInitialPopulationGenerator();
     private final GeneticSelection geneticSelection = new GeneticSelection();
@@ -19,45 +21,39 @@ public class Genetic {
     //Fields
     private final TaskInstance taskInstance;
 
-
     //Simulation control
-    private int populationSize = 10000;
+    private final int populationSize;
+    private float mutationPercentage;
+    private final float mutationPercentageProgress;
+    private final float elitePercentage;
 
-    private int mutationRate = 0;
-
-    private float finalMutationPercentage = 0.0f;
-    private float mutationPercentage = 0.005f;
-
-    private float mutationPercentageProgress = 0.01f;
-
-    private float mutationPercentageStagnation = 0.02f;
-    private float elitePercentage = 0.05f;
-
-    private int mutX = 0;
     //Simulation duration
-    private final int duration = 5;
-    private final ChronoUnit unit = ChronoUnit.MINUTES;
+    private final int duration;
+    private final ChronoUnit unit;
 
     //Loging
     private Chromosome bestResult;
-    private int bestResutFit = 1000000;
-    private float stagnate = 0.0f;
-
     private float progressPercentage = 0f;
+    float loggedProgress = 0.0f;
 
-    public Genetic(TaskInstance taskInstance) {
+    boolean loggingEnabled;
+
+
+    public Genetic(TaskInstance taskInstance, int populationSize, float mutationPercentage, float mutationPercentageProgress, float elitePercentage, int duration, ChronoUnit timeUnit, boolean loggingEnabled) {
         this.taskInstance = taskInstance;
+        this.populationSize = populationSize;
+        this.mutationPercentage = mutationPercentage;
+        this.mutationPercentageProgress = mutationPercentageProgress;
+        this.elitePercentage = elitePercentage;
+        this.duration = duration;
+        this.unit = timeUnit;
+        this.loggingEnabled = loggingEnabled;
     }
 
-    public Chromosome solve(int pop, int muta) {
-        populationSize = pop;
-        mutX = muta;
+    public List<Process> solve() {
         Population population = generateInitialPopulation.generateInitialPopulationRandom(taskInstance, populationSize);
         //Population population = generateInitialPopulation.generateFromLpt(taskInstance, populationSize);
-        //Population population = generateInitialPopulation.half(taskInstance, populationSize);
         population = applySteps(population);
-
-        //System.out.println("Start time: " + new Date() + "\n");
 
         int populationNumber = 0;
         long startTime = System.currentTimeMillis();
@@ -67,21 +63,26 @@ public class Genetic {
             populationNumber++;
             population = applySteps(population);
 
-            //System.out.println("taskInstance.TaskInstance: " + taskInstance.getInstanceName() + " Population " + (populationNumber) + " best result: " + bestResult.getFitness());
-
-            if (populationNumber % 1000 == 0) {
-                System.out.println("taskInstance.TaskInstance: " + taskInstance.getInstanceName()+" Mutation: "+finalMutationPercentage + " Population " + (populationNumber) + " best result: " + bestResult.getFitness());
+            if (this.loggedProgress + 0.05f < progressPercentage && loggingEnabled) {
+                this.loggedProgress += 0.05f;
+                System.out.println("Instance: " + taskInstance.getInstanceName() + ", Progress: " + this.loggedProgress + ", Population " + (populationNumber) + ", Best result: " + bestResult.getFitness());
             }
         }
 
-        /*System.out.println("\nEnd time: " + new Date());
-        System.out.println("Best result: " + bestResult.getFitness());
-
-        System.out.println("Pop: " + populationNumber);
-        System.out.println("mut: " + mutationRate);*/
-
         calculateFitness(population);
-        return population.getChromosomes().get(0);
+        Chromosome chromosome = population.getChromosomes().get(0);
+
+        Map<Integer, List<Genom>> assignedTask = chromosome.getGenoms().stream().collect(Collectors.groupingBy(Genom::getProcess));
+        List<Process> processes = assignedTask.entrySet().stream().map(integerListEntry -> {
+            Process process = new Process(integerListEntry.getKey());
+            List<Integer> tasks = integerListEntry.getValue().stream().map(Genom::getExecutionTime).toList();
+            process.setAssignedTasks(tasks);
+
+            return process;
+        }).collect(Collectors.toList());
+
+        processes.sort(Comparator.comparingInt(Process::getProcessNumber));
+        return processes;
     }
 
     private Population applySteps(Population population) {
@@ -90,20 +91,7 @@ public class Genetic {
         calculateFitness(population);
 
         //Zapisz najlepsze rozwiazanie żeby móc je zalogować w konsoli
-
-/*        if (population.getChromosomes().get(0).getFitness() == bestResutFit) {
-            stagnate += 0.00001f;
-
-            if (stagnate > 1) {
-                stagnate = 1.0f;
-            }
-
-        } else {
-            stagnate = 0.0f;
-        }*/
-
         bestResult = population.getChromosomes().get(0);
-        bestResutFit = population.getChromosomes().get(0).getFitness();
 
         //Wygenerowanie nowej generacji na podstawie starej
         population = selection(population);
@@ -138,7 +126,7 @@ public class Genetic {
         }
 
 
-        geneticSelection.prepareForRandomSelection(population,progressPercentage);
+        geneticSelection.prepareForRandomSelection(population);
         List<Chromosome> crossedChromosomes = IntStream.range(0, populationSize - eliteNumber).parallel().mapToObj(value -> {
             Random random = new Random();
             Chromosome parent1 = geneticSelection.selectRandom(population, random);
@@ -163,7 +151,7 @@ public class Genetic {
             } else if (randomNumber == 1) {
                 baseGenom = parent2.getGenoms().get(i);
             } else {
-                throw new RuntimeException("sad");
+                throw new RuntimeException("");
             }
 
             genomes.add(new Genom(baseGenom.getExecutionTime(), baseGenom.getProcess()));
@@ -173,41 +161,29 @@ public class Genetic {
     }
 
     private void mutate(Population population) {
-        calculateMutationRate(population);
         int eliteNumber = Math.round(populationSize * elitePercentage);
 
         List<Chromosome> elite = population.getChromosomes().subList(eliteNumber, population.getChromosomes().size());
         elite.stream().parallel().forEach(chromosome -> {
             Random random1 = new Random();
             int processNumber = taskInstance.getProcessNumber();
-            int mut = mutationRate;
+            int mutationRate = calculateMutationRate();
             for (Genom genom : chromosome.getGenoms()) {
-                if (mut == 0 || random1.nextInt(0, mut) == 0) {
+                if (mutationRate == 0 || random1.nextInt(0, mutationRate) == 0) {
                     genom.setProcess(random1.nextInt(0, processNumber));
                 }
             }
         });
-
-/*        for (int i = eliteNumber; i < population.getChromosomes().size(); i++) {
-            Chromosome chromosome = population.getChromosomes().get(i);
-            for (Genom genom : chromosome.getGenoms()) {
-                if (random.nextInt(0, mutationRate) == 0) {
-                    genom.setProcess(random.nextInt(0, taskInstance.getProcessNumber()));
-                }
-            }
-        }*/
     }
 
-    private void calculateMutationRate(Population population) {
-
-        finalMutationPercentage = (mutationPercentage + progressPercentage * mutationPercentageProgress + stagnate * mutationPercentageStagnation);
-        mutationRate = Math.round(1 / finalMutationPercentage);
-
-        /*mutationRate = 10 * taskInstance.getTaskNumber() - Math.round(progressPercentage * taskInstance.getTaskNumber() * mutX) - Math.round(stagnate * taskInstance.getTaskNumber());
-         */
+    private int calculateMutationRate() {
+        float finalMutationPercentage = (mutationPercentage + progressPercentage * mutationPercentageProgress);
+        int mutationRate = Math.round(1 / finalMutationPercentage);
 
         if (mutationRate < 0) {
             mutationRate = 0;
         }
+
+        return mutationRate;
     }
 }
