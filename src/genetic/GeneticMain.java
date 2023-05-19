@@ -16,7 +16,7 @@ public class GeneticMain {
         List<TaskInstance> taskInstances = TaskInstanceReader.getTaskInstanceFromDirectory("C:\\opt\\genetic");
 
         List<Results> results = taskInstances.stream().map(taskInstance -> {
-            Genetic genetic = new Genetic(taskInstance, 1000, 0.0005f, 0.0005f, 0.05f, 3, ChronoUnit.MINUTES, true);
+            Genetic genetic = new Genetic(taskInstance, 1000, 0.0005f, 0.0005f, 0.05f, 5, ChronoUnit.MINUTES, true);
             List<Process> processes = genetic.solve();
 
             return new Results(taskInstance, processes);

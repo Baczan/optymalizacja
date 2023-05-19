@@ -52,8 +52,6 @@ public class Genetic {
 
     public List<Process> solve() {
         Population population = generateInitialPopulation.generateInitialPopulationRandom(taskInstance, populationSize);
-        //Population population = generateInitialPopulation.generateFromLpt(taskInstance, populationSize);
-        population = applySteps(population);
 
         int populationNumber = 0;
         long startTime = System.currentTimeMillis();

@@ -6,6 +6,8 @@ public class TaskInstance {
     private int processNumber;
     private int taskNumber;
 
+    private float optimalValue;
+
     private String instanceName;
 
     private List<Integer> tasks;
@@ -40,5 +42,13 @@ public class TaskInstance {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
+    }
+
+    public float getOptimalValue() {
+        return optimalValue;
+    }
+
+    public void setOptimalValue(float optimalValue) {
+        this.optimalValue = optimalValue;
     }
 }

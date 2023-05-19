@@ -36,6 +36,9 @@ public class TaskInstanceReader {
             taskInstance.setTasks(lines.subList(2, lines.get(1) + 2));
 
             taskInstance.setInstanceName(file.getName());
+            float optimalValue = (float)taskInstance.getTasks().stream().mapToInt(Integer::intValue).sum()/(float)taskInstance.getProcessNumber();
+            taskInstance.setOptimalValue(optimalValue);
+
             return taskInstance;
         } catch (Exception e) {
             System.out.println("Błąd podczas wczytywania instancji zadania: " + filePath);
